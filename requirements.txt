@@ -14,7 +14,7 @@ gTTS
 
 # WebRTC and Additional Libraries
 aiortc
-traceback-with-locals
+traceback  # استبدال traceback-with-locals بـ traceback القياسية
 
 # Dependency Resolution Helpers
 protobuf>=3.20.3,<5.0.0
