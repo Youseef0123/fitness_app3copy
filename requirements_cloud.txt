@@ -6,3 +6,7 @@ mediapipe>=0.10.14,<0.11.0
 numpy>=1.26.0,<2.0.0
 flask>=3.0.0,<4.0.0
 flask-cors>=5.0.0,<6.0.0 
+gunicorn
+opencv-python
+pygame
+gTTS
