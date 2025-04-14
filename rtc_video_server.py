@@ -5,6 +5,7 @@ import threading
 import numpy as np
 import mediapipe as mp
 from utils import calculate_angle, mp_pose, pose
+import asyncio
 
 # Dictionary to store active video processors
 video_processors = {}
@@ -100,6 +101,56 @@ async def process_exercise_frame(frame, exercise_type):
     # frame_data = processed_frame
     return
 
+from aiortc import RTCPeerConnection, VideoStreamTrack
+
+async def process_offer(offer_data):
+    try:
+        sdp = offer_data.get('sdp', {})
+        exercise = offer_data.get('exercise', 'default')
+        
+        # Create a simplified WebRTC response
+        response = {
+            'sdp': {
+                'type': 'answer',
+                'sdp': sdp.get('sdp', '')
+            },
+            'ice_candidates': []
+        }
+        
+        return response
+    except Exception as e:
+        print(f"Error processing offer: {str(e)}")
+        return {"error": str(e)}
+
+
+
+
+import asyncio
+from aiortc import RTCPeerConnection, VideoStreamTrack
+
+async def process_offer(offer_data):
+    try:
+        sdp = offer_data.get('sdp', {})
+        exercise = offer_data.get('exercise', 'default')
+        
+        # Simplified WebRTC response
+        response = {
+            'sdp': {
+                'type': 'answer',
+                'sdp': sdp.get('sdp', '')
+            },
+            'ice_candidates': []
+        }
+        
+        return response
+    except Exception as e:
+        print(f"Error processing WebRTC offer: {str(e)}")
+        return {"error": str(e)}
+    
+
+
+
+    
 def get_frame_from_exercise(exercise_type):
     """
     Get the latest processed frame for a specific exercise

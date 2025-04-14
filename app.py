@@ -8,6 +8,9 @@ from gtts import gTTS
 from flask_cors import CORS
 import asyncio
 import traceback
+from concurrent.futures import ThreadPoolExecutor
+
+# Import WebRTC processing
 from rtc_video_server import process_offer
 
 # Import exercise modules
@@ -26,24 +29,22 @@ from exercises.push_ups import push_ups
 app = Flask(__name__, static_folder='static')
 CORS(app)  # Enable CORS for all routes
 
-# Initialize pygame mixer
-pygame.mixer.init()
+# Setup for async processing
+executor = ThreadPoolExecutor()
 
-# Define a dummy sound class that doesn't use actual file paths
+# Dummy sound class to avoid file path issues
 class DummySound:
     def play(self):
         pass
-        
     def stop(self):
         pass
 
 # Use dummy sound instead of loading from a specific path
 sound = DummySound()
 
-# Create audio directory if it doesn't exist
+# Ensure audio directory exists
 os.makedirs("audio", exist_ok=True)
 
-# Serve static files
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -52,30 +53,25 @@ def index():
 def serve_static(path):
     return send_from_directory('static', path)
 
-# Legacy video feed route (still kept for backward compatibility)
 @app.route('/video_feed/<exercise>')
 def video_feed(exercise):
     try:
-        if exercise == 'hummer':
-            return Response(hummer(sound), mimetype='multipart/x-mixed-replace; boundary=frame')
-        elif exercise == 'front_raise':
-            return Response(dumbbell_front_raise(sound), mimetype='multipart/x-mixed-replace; boundary=frame')
-        elif exercise == 'squat':
-            return Response(squat(sound), mimetype='multipart/x-mixed-replace; boundary=frame')
-        elif exercise == 'triceps':
-            return Response(triceps_extension(sound), mimetype='multipart/x-mixed-replace; boundary=frame')
-        elif exercise == 'lunges':
-            return Response(lunges(sound), mimetype='multipart/x-mixed-replace; boundary=frame')
-        elif exercise == 'shoulder_press':
-            return Response(shoulder_press(sound), mimetype='multipart/x-mixed-replace; boundary=frame')
-        elif exercise == 'plank':
-            return Response(plank(sound), mimetype='multipart/x-mixed-replace; boundary=frame')
-        elif exercise == 'side_lateral_raise':
-            return Response(side_lateral_raise(sound), mimetype='multipart/x-mixed-replace; boundary=frame')
-        elif exercise == 'triceps_kickback_side':
-            return Response(triceps_kickback_side(sound), mimetype='multipart/x-mixed-replace; boundary=frame')
-        elif exercise == 'push_ups':
-            return Response(push_ups(sound), mimetype='multipart/x-mixed-replace; boundary=frame')
+        exercise_map = {
+            'hummer': hummer,
+            'front_raise': dumbbell_front_raise,
+            'squat': squat,
+            'triceps': triceps_extension,
+            'lunges': lunges,
+            'shoulder_press': shoulder_press,
+            'plank': plank,
+            'side_lateral_raise': side_lateral_raise,
+            'triceps_kickback_side': triceps_kickback_side,
+            'push_ups': push_ups
+        }
+        
+        if exercise in exercise_map:
+            return Response(exercise_map[exercise](sound), 
+                            mimetype='multipart/x-mixed-replace; boundary=frame')
         else:
             return "Invalid exercise", 400
     except Exception as e:
@@ -83,18 +79,15 @@ def video_feed(exercise):
         app.logger.error(traceback.format_exc())
         return "Error processing video", 500
 
-# WebRTC signaling endpoint
 @app.route('/api/rtc_offer', methods=['POST'])
 def rtc_offer():
     try:
         data = request.json
         app.logger.info(f"Received WebRTC offer for exercise: {data.get('exercise', 'unknown')}")
         
-        # Process the offer asynchronously
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        response = loop.run_until_complete(process_offer(data))
-        loop.close()
+        # Use ThreadPoolExecutor to handle async processing
+        future = executor.submit(asyncio.run, process_offer(data))
+        response = future.result()
         
         return jsonify(response)
     except Exception as e:
@@ -104,7 +97,6 @@ def rtc_offer():
 
 @app.route('/api/exercises', methods=['GET'])
 def get_exercises():
-    """Return the list of available exercises"""
     try:
         exercises = [
             {"id": "hummer", "name": "Bicep Curl (Hammer)"},
@@ -125,8 +117,6 @@ def get_exercises():
 
 @app.route('/api/pose_data')
 def pose_data():
-    # Get the pose data and return it as a JSON response
-    # This is a placeholder - actual implementation would return real pose data
     try:
         data = {
             "status": "ok",
@@ -142,23 +132,8 @@ def pose_data():
 def camera_test():
     return render_template('camera_test.html')
 
-
-# أضف هذا المسار الجديد في ملف app.py
-
 @app.route('/exercise/<exercise>')
 def direct_exercise(exercise):
-    """
-    مسار لفتح صفحة تمرين محدد مباشرة
-    
-    Args:
-        exercise: معرف التمرين
-    
-    Returns:
-        صفحة HTML للتمرين
-    """
-    print(f"تم طلب صفحة تمرين مباشر: {exercise}")
-    
-    # التحقق من وجود التمرين
     valid_exercises = [
         "hummer", "front_raise", "squat", "triceps", "lunges", 
         "shoulder_press", "plank", "side_lateral_raise", 
@@ -166,15 +141,10 @@ def direct_exercise(exercise):
     ]
     
     if exercise not in valid_exercises:
-        app.logger.error(f"تم طلب تمرين غير صالح: {exercise}")
+        app.logger.error(f"Invalid exercise requested: {exercise}")
         return "Exercise not found", 404
         
-    # قم بتمرير معرف التمرين إلى قالب HTML
     return render_template('direct_exercise.html', exercise_id=exercise)
-
-
-
-
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))
