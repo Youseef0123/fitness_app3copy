@@ -1,6 +1,8 @@
-# requirements.txt
-protobuf
-tensorflow
-tensorboard
-mediapipe
-# ... other dependencies without specific versions
+# إصدارات أكثر مرونة تسمح بالتوافق
+protobuf>=3.20.3,<5.0.0
+tensorflow>=2.17.0,<3.0.0
+tensorboard>=2.17.1,<3.0.0
+mediapipe>=0.10.14,<0.11.0
+numpy>=1.26.0,<2.0.0
+flask>=3.0.0,<4.0.0
+flask-cors>=5.0.0,<6.0.0
