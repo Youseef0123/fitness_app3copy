@@ -1,4 +1,3 @@
-# إصدارات أكثر مرونة تسمح بالتوافق
 protobuf>=3.20.3,<5.0.0
 tensorflow>=2.17.0,<3.0.0
 tensorboard>=2.17.1,<3.0.0
@@ -10,3 +9,4 @@ gunicorn
 opencv-python
 pygame
 gTTS
+aiortc
