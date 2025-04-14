@@ -177,11 +177,5 @@ def direct_exercise(exercise):
 
 
 if __name__ == '__main__':
-    # Get port from environment variable or use default
     port = int(os.environ.get('PORT', 8080))
-    
-    # Enable debugging for development
-    debug_mode = os.environ.get('FLASK_ENV') == 'development'
-    
-    # Start the server
-    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+    app.run(host='0.0.0.0', port=port)
