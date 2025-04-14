@@ -32,6 +32,10 @@ steps:
   - 'managed'
   - '--allow-unauthenticated'
 
+
+
+options:
+  logging: CLOUD_LOGGING_ONLY
 # Alternative: Deploy to App Engine
 # - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
 #   entrypoint: gcloud
