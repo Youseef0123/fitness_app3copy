@@ -148,12 +148,17 @@ def camera_test():
 @app.route('/exercise/<exercise>')
 def direct_exercise(exercise):
     """
-    فتح صفحة تمرين محدد مباشرة
+    مسار لفتح صفحة تمرين محدد مباشرة
     
     Args:
         exercise: معرف التمرين
+    
+    Returns:
+        صفحة HTML للتمرين
     """
-    # تحقق من وجود التمرين
+    print(f"تم طلب صفحة تمرين مباشر: {exercise}")
+    
+    # التحقق من وجود التمرين
     valid_exercises = [
         "hummer", "front_raise", "squat", "triceps", "lunges", 
         "shoulder_press", "plank", "side_lateral_raise", 
@@ -161,10 +166,15 @@ def direct_exercise(exercise):
     ]
     
     if exercise not in valid_exercises:
+        app.logger.error(f"تم طلب تمرين غير صالح: {exercise}")
         return "Exercise not found", 404
         
     # قم بتمرير معرف التمرين إلى قالب HTML
     return render_template('direct_exercise.html', exercise_id=exercise)
+
+
+
+
 
 if __name__ == '__main__':
     # Get port from environment variable or use default
