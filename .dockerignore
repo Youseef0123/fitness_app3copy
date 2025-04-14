@@ -1,0 +1,64 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Audio caches
+audio/*.mp3
+
+# Logs
+*.log
+
+# Docker
+.dockerignore
+Dockerfile
+
+# Local development
+.env
+.env.local
+.env.development
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Video files
+*.mp4
+*.avi
+*.mov
+
+# Don't ignore directories needed for the app
+!static/
+!templates/
+!exercises/

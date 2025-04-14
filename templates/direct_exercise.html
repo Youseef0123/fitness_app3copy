@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fitness Trainer - {{ exercise_id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        #video-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #webrtc-video, img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        #exercise-info {
+            margin-top: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .fullscreen-btn {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #loading-indicator, #error-message, #no-exercise {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="/">AI مدرب اللياقة</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">الصفحة الرئيسية</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-lg-8 col-md-12 mb-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0" id="exercise-title">تتبع التمرين</h5>
+                    </div>
+                    <div class="card-body text-center p-0">
+                        <div id="video-container">
+                            <video id="webrtc-video" autoplay playsinline></video>
+                            <button class="fullscreen-btn" id="fullscreen-btn">تكبير الشاشة</button>
+                            <div id="loading-indicator" class="d-none">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">جاري التحميل...</span>
+                                </div>
+                                <p class="mt-2">جاري تشغيل الكاميرا...</p>
+                            </div>
+                            <div id="error-message" class="alert alert-danger d-none">
+                                حدث خطأ في تشغيل الكاميرا. يرجى التأكد من السماح بالوصول إلى الكاميرا.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-12">
+                <div id="exercise-info" class="mb-4">
+                    <h4 id="exercise-name">جاري تحميل معلومات التمرين...</h4>
+                    <p id="exercise-description"></p>
+                    <div id="exercise-instructions"></div>
+                </div>
+                
+                <!-- <div class="card mt-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">التمارين الأخرى</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="other-exercises" class="list-group">
+                            سيتم إضافة التمارين الأخرى هنا بواسطة JavaScript
+                        </div>
+                    </div>
+                </div>   -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <div class="container">
+            <p class="mb-0">AI مدرب اللياقة &copy; 2025 - جميع الحقوق محفوظة</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/static/js/webrtc.js"></script>
+    <script>
+        // استعلام معرف التمرين من الرابط
+        const exerciseId = "{{ exercise_id }}";
+        
+        // معلومات التمارين
+        const exerciseDescriptions = {
+            'hummer': {
+                name: 'Bicep Curl (Hammer) Exercise',
+                description: 'An exercise to strengthen the front arm muscles (biceps) in a hammer grip style.',
+                instructions: [
+                    'Stand straight holding weights beside your body',
+                    'Bend your elbows to lift the weight toward your shoulders while keeping your upper arms stationary',
+                    'Slowly lower the weight back to the starting position',
+                    'Continue to breathe normally during the exercise'
+                ]
+            },
+            'front_raise': {
+                name: 'Front Raise Exercise',
+                description: 'An exercise to strengthen the front shoulder muscles.',
+                instructions: [
+                    'Stand with weights in front of your thighs',
+                    'Lift your arms forward until they are parallel to the ground',
+                    'Slowly return the weight back to the starting position',
+                    'Keep your back straight throughout the exercise'
+                ]
+            },
+            'squat': {
+                name: 'Squat Exercise',
+                description: 'A fundamental exercise to strengthen the leg and glute muscles.',
+                instructions: [
+                    'Stand with your feet shoulder-width apart',
+                    'Lower your body as if you were sitting in a chair',
+                    'Keep your back straight and your knees above your feet',
+                    'Return to the standing position by pushing the ground with your heels'
+                ]
+            },
+            'triceps': {
+                name: 'Triceps Extension Exercise',
+                description: 'An exercise to strengthen the rear arm muscles (triceps).',
+                instructions: [
+                    'Stand with the weight overhead in both hands',
+                    'Bend your elbows to lower the weight behind your head',
+                    'Extend your arms to lift the weight back up',
+                    'Focus on moving only your elbows'
+                ]
+            },
+            'lunges': {
+                name: 'Lunges Exercise',
+                description: 'An exercise to strengthen the leg and glute muscles with a focus on balance.',
+                instructions: [
+                    'Stand with your feet facing forward',
+                    'Take a large step forward with one foot',
+                    'Lower your body until your front knee forms a 90-degree angle',
+                    'Push off the front foot to return to the starting position'
+                ]
+            },
+            'shoulder_press': {
+                name: 'Shoulder Press Exercise',
+                description: 'An exercise to strengthen the shoulder muscles.',
+                instructions: [
+                    'Stand or sit with weights at shoulder level',
+                    'Press the weights overhead until your arms are fully extended',
+                    'Slowly lower the weights back to shoulder level',
+                    'Repeat while keeping your back straight'
+                ]
+            },
+            'plank': {
+                name: 'Plank Exercise',
+                description: 'An exercise to strengthen the core and back muscles and improve stability.',
+                instructions: [
+                    'Lie on your stomach and lift your body supported by your forearms and toes',
+                    'Maintain a straight line from your head to your heels',
+                    'Tighten your core muscles and hold the position',
+                    'Try to hold the position for 30 seconds or more'
+                ]
+            },
+            'side_lateral_raise': {
+                name: 'Side Lateral Raise Exercise',
+                description: 'An exercise to strengthen the lateral shoulder muscles.',
+                instructions: [
+                    'Stand with weights at your sides',
+                    'Raise your arms out to the sides until they are parallel to the ground',
+                    'Slowly lower the weights back to the starting position',
+                    'Keep your elbows slightly straight during the exercise'
+                ]
+            },
+            'triceps_kickback_side': {
+                name: 'Triceps Kickback Exercise',
+                description: 'An exercise to strengthen the rear arm muscles (triceps) from a side position.',
+                instructions: [
+                    'Bend forward slightly, keeping your knees bent',
+                    'Pull your elbows back so they are high beside your body',
+                    'Extend your arms backward while keeping your elbows stationary',
+                    'Bend your arms slowly to return to the starting position'
+                ]
+            },
+            'push_ups': {
+                name: 'Push Up Exercise',
+                description: 'A fundamental exercise to strengthen the chest, arms, and shoulder muscles.',
+                instructions: [
+                    'Start in a prone position with your body supported by your hands and toes',
+                    'Lower your body by bending your elbows until your chest is close to the ground',
+                    'Push your body back up by extending your elbows',
+                    'Keep your body straight throughout the exercise'
+                ]
+            }
+        };
+        
+
+
+        // عناصر DOM
+        const exerciseTitle = document.getElementById('exercise-title');
+        const exerciseName = document.getElementById('exercise-name');
+        const exerciseDescription = document.getElementById('exercise-description');
+        const exerciseInstructions = document.getElementById('exercise-instructions');
+        const otherExercises = document.getElementById('other-exercises');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const videoContainer = document.getElementById('video-container');
+        
+        // وظيفة لعرض معلومات التمرين
+        function displayExerciseInfo(exerciseId) {
+            const exerciseData = exerciseDescriptions[exerciseId] || {
+                name: 'Unknown Exercise',
+                description: 'No description available',
+                instructions: ['No instructions available']
+            };
+            
+            // تعيين عنوان التمرين
+            exerciseTitle.textContent = `تتبع تمرين: ${exerciseData.name}`;
+            
+            // تعيين اسم التمرين
+            exerciseName.textContent = exerciseData.name;
+            
+            // تعيين وصف التمرين
+            exerciseDescription.textContent = exerciseData.description;
+            
+            // تعيين تعليمات التمرين
+            let instructionsHtml = `
+                <h6 class="mt-3">Exercise Instructions:</h6>
+                <ol>
+            `;
+            
+            exerciseData.instructions.forEach(instruction => {
+                instructionsHtml += `<li>${instruction}</li>`;
+            });
+            
+            instructionsHtml += `
+                </ol>
+                <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle"></i> Make sure to follow the instructions for the best results and to avoid injuries.
+                </div>
+            `;
+            
+            exerciseInstructions.innerHTML = instructionsHtml;
+        }
+        
+
+
+        // // وظيفة لجلب قائمة التمارين وعرضها
+        // async function fetchAndDisplayExercises() {
+        //     try {
+        //         const response = await fetch('/api/exercises');
+        //         if (!response.ok) {
+        //             throw new Error('Failed to fetch exercises');
+        //         }
+                
+        //         const exercises = await response.json();
+        //         otherExercises.innerHTML = '';
+                
+        //         exercises.forEach(exercise => {
+        //             if (exercise.id !== exerciseId) {
+        //                 const listItem = document.createElement('a');
+        //                 listItem.className = 'list-group-item list-group-item-action';
+        //                 listItem.href = `/exercise/${exercise.id}`;
+        //                 listItem.textContent = exercise.name;
+                        
+        //                 otherExercises.appendChild(listItem);
+        //             }
+        //         });
+        //     } catch (error) {
+        //         console.error('Error fetching exercises:', error);
+        //         otherExercises.innerHTML = '<div class="alert alert-danger">Failed to load exercise list</div>';
+        //     }
+        // }
+        
+
+
+        // وظيفة لتكبير الشاشة
+        fullscreenBtn.addEventListener('click', () => {
+            if (videoContainer.requestFullscreen) {
+                videoContainer.requestFullscreen();
+            } else if (videoContainer.webkitRequestFullscreen) { /* Safari */
+                videoContainer.webkitRequestFullscreen();
+            } else if (videoContainer.msRequestFullscreen) { /* IE11 */
+                videoContainer.msRequestFullscreen();
+            }
+        });
+        
+        // عند تحميل الصفحة
+        document.addEventListener('DOMContentLoaded', () => {
+            // عرض معلومات التمرين
+            displayExerciseInfo(exerciseId);
+            
+            // جلب وعرض التمارين الأخرى
+            fetchAndDisplayExercises();
+            
+            // بدء اتصال WebRTC للتمرين المحدد
+            if (window.rtcHandler) {
+                window.rtcHandler.initConnection(exerciseId);
+            } else {
+                console.error('RTCHandler not available');
+            }
+        });
+
+        
+    </script>
+</body>
+</html>
