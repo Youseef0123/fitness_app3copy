@@ -1,8 +1,10 @@
-# Git
+# This file specifies files that are *not* uploaded to Google Cloud
+
+# Ignore Git files
 .git
 .gitignore
 
-# Python
+# Python pycache and virtual environments
 __pycache__/
 *.py[cod]
 *$py.class
@@ -27,21 +29,11 @@ venv/
 .venv/
 ENV/
 
-# IDE
+# IDE related
 .idea/
 .vscode/
 *.swp
 *.swo
-
-# Audio caches
-audio/*.mp3
-
-# Logs
-*.log
-
-# Docker
-.dockerignore
-Dockerfile
 
 # Local development
 .env
@@ -53,12 +45,15 @@ Dockerfile
 htmlcov/
 .pytest_cache/
 
-# Video files
-*.mp4
-*.avi
-*.mov
+# Audio caches - these will be created automatically
+audio/*.mp3
 
-# Don't ignore directories needed for the app
+# Log files
+*.log
+
+# Include directories and files needed for deployment
 !static/
 !templates/
 !exercises/
+!app.yaml
+!requirements_cloud.txt

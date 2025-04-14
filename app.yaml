@@ -24,3 +24,7 @@ automatic_scaling:
   min_pending_latency: 30ms
   max_pending_latency: 100ms
   max_concurrent_requests: 50
+  
+# Add build step to install packages from the cloud-compatible requirements file
+build_env_variables:
+  GOOGLE_ENTRYPOINT: "pip install -r requirements_cloud.txt && gunicorn -b :$PORT app:app"
