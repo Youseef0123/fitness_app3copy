@@ -16,12 +16,15 @@ RUN apt-get update && apt-get install -y \
 # Set working directory
 WORKDIR /app
 
-# Copy project files
-COPY requirements.txt .
-COPY . .
+# Copy requirements file first
+COPY requirements_cloud.txt ./requirements.txt
+RUN pip install -r requirements.txt
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application
+COPY . .
 
 # Set environment variables
 ENV PORT=8080
