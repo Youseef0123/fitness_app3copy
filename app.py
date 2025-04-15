@@ -92,6 +92,30 @@ def direct_exercise(exercise):
         
     return render_template('websocket_exercise.html', exercise_id=exercise)
 
+
+
+
+
+@app.route('/fast_video/<exercise>')
+def fast_video(exercise):
+    valid_exercises = [
+        "hummer", "front_raise", "squat", "triceps", "lunges", 
+        "shoulder_press", "plank", "side_lateral_raise", 
+        "triceps_kickback_side", "push_ups"
+    ]
+    
+    if exercise not in valid_exercises:
+        app.logger.error(f"Invalid exercise requested: {exercise}")
+        return "Exercise not found", 404
+        
+    return render_template('direct_video_fast.html', exercise_id=exercise)
+
+
+
+
+
+
+
 # New endpoint for WebSocket-based exercise viewing
 @app.route('/websocket_exercise/<exercise>')
 def websocket_exercise(exercise):
