@@ -8,10 +8,14 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     libxrender-dev \
     ffmpeg \
+    libavdevice-dev \
+    libavfilter-dev \
+    libsdl2-2.0-0 \
     python3-dev \
     build-essential \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
 
 # Set working directory
 WORKDIR /app
