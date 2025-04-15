@@ -79,8 +79,19 @@ def serve_static(path):
 #         app.logger.error(traceback.format_exc())
 #         return "Error processing video", 500
 
+# أضف هذا الإندبوينت الجديد إلى ملف app.py
+
 @app.route('/direct_video/<exercise>')
 def direct_video(exercise):
+    """
+    تقديم صفحة لعرض تتبع التمرين مباشرة بالكاميرا
+    
+    Args:
+        exercise: معرف التمرين المطلوب
+        
+    Returns:
+        صفحة HTML لعرض تتبع التمرين
+    """
     valid_exercises = [
         "hummer", "front_raise", "squat", "triceps", "lunges", 
         "shoulder_press", "plank", "side_lateral_raise", 
@@ -92,7 +103,6 @@ def direct_video(exercise):
         return "Exercise not found", 404
         
     return render_template('direct_video.html', exercise_id=exercise)
-
 
 
 @app.route('/api/rtc_offer', methods=['POST'])
