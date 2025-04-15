@@ -7,7 +7,7 @@ uvicorn[standard]
 # Computer Vision and ML
 opencv-python
 mediapipe
-numpy>=1.26.0,<2.0.0
+numpy>=1.22,<1.25
 
 # Audio and Sound
 pygame
@@ -20,8 +20,7 @@ aiortc
 protobuf>=3.20.3,<5.0.0
 grpcio>=1.40.0,<2.0.0
 
-
-
+# Realtime Communication
 flask-socketio>=5.3.0
 eventlet>=0.33.0
 
