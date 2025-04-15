@@ -793,4 +793,17 @@ if __name__ == '__main__':
     print(f"WebSocket mode: {socketio.async_mode}")
     
     # Run the application
-    socketio.run(app, host='0.0.0.0', port=port)
+if __name__ == '__main__':
+    # Get port from environment variable or use default
+    port = int(os.environ.get('PORT', 8080))
+    
+    # Check if running in cloud environment
+    is_cloud = os.environ.get('K_SERVICE') is not None
+    
+    if is_cloud:
+        # For Cloud Run, use simpler server setup
+        from waitress import serve
+        serve(app, host='0.0.0.0', port=port)
+    else:
+        # For local development, use socketio
+        socketio.run(app, host='0.0.0.0', port=port)
