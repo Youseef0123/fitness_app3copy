@@ -53,31 +53,47 @@ def index():
 def serve_static(path):
     return send_from_directory('static', path)
 
-@app.route('/video_feed/<exercise>')
-def video_feed(exercise):
-    try:
-        exercise_map = {
-            'hummer': hummer,
-            'front_raise': dumbbell_front_raise,
-            'squat': squat,
-            'triceps': triceps_extension,
-            'lunges': lunges,
-            'shoulder_press': shoulder_press,
-            'plank': plank,
-            'side_lateral_raise': side_lateral_raise,
-            'triceps_kickback_side': triceps_kickback_side,
-            'push_ups': push_ups
-        }
+# @app.route('/video_feed/<exercise>')
+# def video_feed(exercise):
+#     try:
+#         exercise_map = {
+#             'hummer': hummer,
+#             'front_raise': dumbbell_front_raise,
+#             'squat': squat,
+#             'triceps': triceps_extension,
+#             'lunges': lunges,
+#             'shoulder_press': shoulder_press,
+#             'plank': plank,
+#             'side_lateral_raise': side_lateral_raise,
+#             'triceps_kickback_side': triceps_kickback_side,
+#             'push_ups': push_ups
+#         }
         
-        if exercise in exercise_map:
-            return Response(exercise_map[exercise](sound), 
-                            mimetype='multipart/x-mixed-replace; boundary=frame')
-        else:
-            return "Invalid exercise", 400
-    except Exception as e:
-        app.logger.error(f"Error in video_feed: {str(e)}")
-        app.logger.error(traceback.format_exc())
-        return "Error processing video", 500
+#         if exercise in exercise_map:
+#             return Response(exercise_map[exercise](sound), 
+#                             mimetype='multipart/x-mixed-replace; boundary=frame')
+#         else:
+#             return "Invalid exercise", 400
+#     except Exception as e:
+#         app.logger.error(f"Error in video_feed: {str(e)}")
+#         app.logger.error(traceback.format_exc())
+#         return "Error processing video", 500
+
+@app.route('/direct_video/<exercise>')
+def direct_video(exercise):
+    valid_exercises = [
+        "hummer", "front_raise", "squat", "triceps", "lunges", 
+        "shoulder_press", "plank", "side_lateral_raise", 
+        "triceps_kickback_side", "push_ups"
+    ]
+    
+    if exercise not in valid_exercises:
+        app.logger.error(f"Invalid exercise requested: {exercise}")
+        return "Exercise not found", 404
+        
+    return render_template('direct_video.html', exercise_id=exercise)
+
+
 
 @app.route('/api/rtc_offer', methods=['POST'])
 def rtc_offer():
