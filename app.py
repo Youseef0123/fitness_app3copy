@@ -94,7 +94,10 @@ def direct_exercise(exercise):
 
 
 
+#===========================test=============================================== 
 
+
+# direct_video_fast.html
 
 @app.route('/fast_video/<exercise>')
 def fast_video(exercise):
@@ -109,6 +112,36 @@ def fast_video(exercise):
         return "Exercise not found", 404
         
     return render_template('direct_video_fast.html', exercise_id=exercise)
+
+
+
+# direct_video_debug.html
+
+@app.route('/debug_video/<exercise>')
+def debug_video(exercise):
+    valid_exercises = [
+        "hummer", "front_raise", "squat", "triceps", "lunges", 
+        "shoulder_press", "plank", "side_lateral_raise", 
+        "triceps_kickback_side", "push_ups"
+    ]
+    
+    if exercise not in valid_exercises:
+        app.logger.error(f"Invalid exercise requested: {exercise}")
+        return "Exercise not found", 404
+        
+    return render_template('direct_video_debug.html', exercise_id=exercise)
+
+
+
+
+#===========================test=============================================== 
+
+
+
+
+
+
+
 
 
 
